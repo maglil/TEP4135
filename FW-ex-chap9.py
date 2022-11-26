@@ -1,4 +1,9 @@
 import sympy as sym
+from math import sqrt
+from scipy.optimize import root_scalar
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Example 9.1
 
@@ -60,3 +65,96 @@ vals = {T2 : 400,
 # Obs! Flow is not isentropic
 #isentropic = sym.Eq( p2/p1, (T2/T1)**(gamma/(gamma-1)) )
 #Ti = sym.solve(isentropic,T1)[0]
+
+# Example 9.8
+print("Example 9.8")
+
+k = 1.4
+R = 287
+T0 = 400
+p0 = 120e3
+
+rho0 = p0/R/T0
+print(f"Density is {rho0:.3}")
+
+A0 = 6e-4
+a0 = sqrt(k*R*T0)
+ratio_p_critical = (2/(k+1))**(k/(k-1))
+print(f"ratio is {ratio_p_critical:.3}")
+
+
+
+p_star = p0*ratio_p_critical
+print(f"P_star is  {p_star:.3}")
+
+# Subsonic=90, supersonic= 63 
+p = 63e3
+# let e = 1 + 1/2*(k-1)*M**2
+
+e = (p0/p)**((k-1)/k)
+a = a0/sqrt(e)
+M = sqrt(2*(e-1)/(k-1))
+rho = rho0/(e**(1/(k-1)))
+print(f"Mach number is {M:.3}")
+print(f"Sound velocity is {a}")
+print(f"Density is {rho:3}")
+V = M*a
+mdot = rho*V*A0
+print(f"mass flow is {mdot:.3}")
+
+# Example 9.9
+print("Example 9.9")
+
+def area_ratio(M,k,ratio):
+    r = 1/M * ( (1+0.5*(k-1)*M**2) / (0.5*(k+1)) )**(0.5*(k+1)/(k-1))-ratio
+    return r
+
+def a_ratio(M,k):
+    return sqrt(1 + 0.5*(k-1)*M**2)
+
+def rho_ratio(M,k):
+    return (1+0.5*(k-1)*M**2)**(1/(k-1))
+
+def p_ratio(M,k):
+    return (1+0.5*(k-1)*M**2)**(k/(k-1))
+
+T0 = 500
+p0 = 1e6
+Ae = 0.008
+A_star = 0.002
+rho0 = p0/(R*T0)
+a0 = sqrt(k*R*T0)
+
+M = root_scalar(area_ratio, args=(k,Ae/A_star),method='bisect',bracket=[1,4]).root
+print(f"Mach number is {M:.4}")
+
+ae = a0/a_ratio(M,k)
+print(f"Sound velocity is {ae:.4}")
+
+rhoe = rho0/rho_ratio(M,k)
+print(f"density is {rhoe:.4}")
+
+Ve = M*ae
+
+pe = p0/p_ratio(M,k)
+print(f"Pressure is {pe:.4}")
+
+md = rhoe*Ve*Ae
+print(f"Mass flow is {md:.4}")
+
+def p_star_ratio(k):
+    return (2/(k+1))**(k/(k-1))
+
+M2 = root_scalar(area_ratio, args=(k,Ae/A_star),method='bisect',bracket=[0.1,1]).root
+print(f"Mach number is {M2:.4}")
+
+p_star = p_star_ratio(k)*p0
+
+p2 = p0/p_ratio(M2,k)
+print(f"pressure at critical is {p2:.4}")
+
+k = 1.4
+m = np.linspace(0.1,4,100)
+r = area_ratio(m,k,0)
+#plt.plot(m,r)
+#plt.show()

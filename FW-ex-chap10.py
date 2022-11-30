@@ -32,3 +32,5 @@ print(S*180/pi)
 b = 2*y/tan(theta)
 S = g*n**2*P/(R**(1/3)*b)
 print(S)
+
+# Example 

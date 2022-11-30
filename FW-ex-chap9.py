@@ -1,5 +1,5 @@
 import sympy as sym
-from math import sqrt
+from math import sqrt, asin, atan, sin, pi, tan, cos
 from scipy.optimize import root_scalar
 
 import numpy as np
@@ -158,3 +158,46 @@ m = np.linspace(0.1,4,100)
 r = area_ratio(m,k,0)
 #plt.plot(m,r)
 #plt.show()
+
+# Example 9.16
+h = 5
+l = 9
+theta = atan(h/l)
+M = 1/sin(theta)
+print(f'The mach number is {M:.2}')
+
+# Example 9.17
+print('--Example 9.17--')
+
+p1 = 69e3
+M1 = 2
+theta = 10*pi/180
+k = 1.4
+eps = 0.1
+
+def beta_eq(beta, M1, k, theta):
+    return (k+1)*M1**2*np.sin(beta)**2 / ((k-1)*M1**2*np.sin(beta)**2 + 2) - np.tan(beta)/np.tan(beta-theta)
+
+beta = root_scalar(beta_eq, args=(M1, k, theta), x0=.1, x1=pi/4, bracket=[theta+eps, pi/4]).root
+beta_deg = beta*180/pi
+print(f'Wave angle beta is {beta_deg:.3}')
+
+#b = np.linspace(theta+eps,pi/4,100)
+#plt.plot(b, beta_eq(b,M1,k,theta))
+#plt.show()
+
+M1n = M1*sin(beta)
+M2n = sqrt( ((k-1)*M1n**2+2) / (2*k*M1n**2-(k-1)) )
+M2 = M2n/sin(beta-theta)
+print(f'Mach number after obliqe shock is {M2:.4}')
+
+p2 = 1/(k+1)*(2*k*M1**2*sin(beta)**2-(k-1))*p1
+print(f'Pressure after shock is {p2:.3}')
+
+p2 = k*M1**2*tan(theta)/sqrt(M1**2-1)*p1 + p1
+print(f'Linearized approximated pressure after shock is {p2:.3}')
+
+mu = asin(1/M1)
+beta = asin(sin(mu) + (k+1)/(4*cos(mu))*tan(theta))
+beta_deg = beta*180/pi
+print(f'Approximate beta is {beta_deg:.3}')

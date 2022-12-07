@@ -23,14 +23,18 @@ def T_ratio(M,k):
 def eq(M2,M1,k):
     return T_ratio_rayleigh(M1,k)/T_ratio_rayleigh(M2,k)-t
 
+print('-(i)-')
+
 r = A_ratio(M1,k)
-print(f"Area ratio is {r}")
+print(f"Area ratio is {r:.3}")
+
+print('-(ii)-')
 
 M2 = root_scalar(eq, args=(M1,k), x0 = 0.1, x1 = 0.9, bracket = (0.1,1)).root
 print(f"M2 is {M2:.5}")
 
 r2 = A_ratio(M2,k)
-print(f"Area ratio after reheat is {r2}")
+print(f"Area ratio after reheat is {r2:.3}")
 
 
 #T1 = T01/T_ratio(M1,k)

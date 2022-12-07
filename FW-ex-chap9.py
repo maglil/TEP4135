@@ -201,3 +201,25 @@ mu = asin(1/M1)
 beta = asin(sin(mu) + (k+1)/(4*cos(mu))*tan(theta))
 beta_deg = beta*180/pi
 print(f'Approximate beta is {beta_deg:.3}')
+
+# Example 9.18
+print('--Example 9.18--')
+
+p = 200e3
+M1 = 3
+k = 1.4
+theta = -20*pi/180
+K = (k+1)/(k-1)
+
+def omega(M):
+    return np.sqrt(K)*np.arctan( ((M**2-1)/K)**(1/2) ) - np.arctan( (M**2-1)**(1/2))
+
+def eq(M2, M1):
+    return omega(M2)-omega(M1)-theta
+
+M2 = root_scalar(eq, args=(M1), x0=1.1, x1=10, bracket=(1.1,10)).root
+
+#M = np.linspace(1,20,100)
+#plt.plot(M,omega(M))
+#plt.show()
+print(f'Downstream Mach number is {M2:.3}')

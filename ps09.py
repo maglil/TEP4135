@@ -1,4 +1,4 @@
-from math import log
+from math import log, pi, sqrt
 from scipy.optimize import root_scalar
 import numpy as np
 
@@ -13,7 +13,9 @@ R = 287
 k = 7/5 #=1.4
 
 # Problem 1
+print('--Problem set 9--')
 
+print('--Problem 1--')
 # System properties
 f = 0.0357
 D = 0.200
@@ -141,3 +143,153 @@ print("p_l = "+ str(p_l))
 print("v_l = "+ str(v_l))
 print("T_l = "+ str(T_l))
 
+print('--Problem 2--')
+M1 = 2.92
+d = 25e-3
+T0 = 400
+p0 = 29.65e5
+R = 287
+k = 1.4
+f = 0.02
+
+A = pi*d**2/4
+a0 = sqrt(k*R*T0)
+rho0 = p0/(R*T0)
+
+# same as T_ratio
+def isentropic(M,k):
+    return 1+1/2*(k-1)*M**2
+
+def a_ratio(M,k):
+    return isentropic(M,k)**(1/2)
+
+def rho_ratio(M,k):
+    return isentropic(M,k)**(1/(k-1))
+
+def p_ratio(M,k):
+    return isentropic(M,k)**(k/(k-1))
+
+
+print('-2a-')
+
+a1 = a0/a_ratio(M1,k)
+rho1 = rho0/rho_ratio(M1,k)
+V1 = M1*a1
+
+mdot = rho1*V1*A
+print(f'The mass flow rate is {mdot:.5}')
+
+
+# Alternative procedure
+p = p0/p_ratio(M1,k)
+print(p)
+T = T0/isentropic(M1,k)
+print(T)
+mdot2 = p*M1*sqrt(k/(R*T))*A
+
+print(f'The mass flow rate is {mdot2:.5} (version 2)')
+
+print('-2b-')
+def fanno(M,k):
+    return (1-M**2)/(k*M**2) + (k+1)/(2*k)*np.log( (k+1)*M**2/(2 + (k-1)*M**2) )
+
+def T_star_fanno_ratio(M,k):
+    return (k+1) / (2 + (k-1)*M**2)
+
+def p_star_fanno_ratio(M,k):
+    return 1/M*( (k+1)/(2+(k-1)*M**2) )**(1/2)
+
+fp = fanno(M1,k)
+Ls = fp*d/f
+print(f'The critcal length is {Ls:.3}')
+
+
+T1 = T0/isentropic(M1,k)
+print(T1)
+Ts = T1/T_star_fanno_ratio(M1,k)
+print(f'The exit temperature is {Ts:.3}')
+
+p1 = p0/p_ratio(M1,k)
+ps = p1/p_star_fanno_ratio(M1,k)
+print(f'The exit pressure is {ps:.3}')
+
+cp = R/(1-k)
+
+def dT(M,k,f,D,T,dx):
+    return -k*(k-1)*M**4*f*dx/(2*(1-M**2)*D)
+
+def ds(cp,T,dT):
+    return cp*np.log( (T+dT)/T )
+
+L = Ls
+N = 100
+
+dx = L/(N-1)
+
+T = np.zeros(N)
+S = np.zeros(N)
+
+T[0] = T1
+
+for i in range(N-1):
+    deltaT = dT(M1,k,f,D,T[i],dx)
+    T[i+1] = T[i]
+    S[i+1] = S[i] + ds(cp,T[i],deltaT)
+
+#plt.plot(T,S)
+#plt.show()
+
+print('--Problem 3--')
+
+def sutherland(mu0,T,T0,S):
+    return mu0*(T/T0)**(3/2)*(T0+S)/(T+S)
+
+
+def darcy(rho,V,d,mu):
+    return 64*mu/(rho*V*d)
+
+R = 287
+K = 1.4
+cp = 1005
+
+mu0 = 1.716e-5
+T0 = 273.15
+S = 110.4
+
+T = 300
+p = 150e3
+M1 = 0.4
+D = 3e-2
+L = 3
+
+rho = p/(R*T)
+a = sqrt(k*R*T)
+V = M1*a
+
+mu = sutherland(mu0,T,T0,S)
+print(f'The viscosity is {mu:.4}')
+
+Re = rho*V*D/mu
+print(f'The Reynolds number is {Re:.4}')
+
+#f = darcy(rho,V,d,mu)
+f = 0.0136
+
+print(f'The friction factor is {f:.4}')
+
+fp = f * L /D
+
+def eq(M2,M1,fp,k):
+    return fanno(M1,k)-fanno(M2,k)-fp
+
+M2 = root_scalar(eq, args=(M1,fp,k), bracket = [M1,1]).root
+print(f'The exit mach number is {M2:.3}')
+print(fanno(M1,k))
+print(fp)
+Ms = np.linspace(M1,1,100)
+plt.plot(Ms, fanno(M1,k)-fanno(Ms,k)-fp)
+plt.show()
+
+print('-ii-')
+Lc = D/f*fanno(M1,k)
+print(f'The critical length is {Lc:.4}')

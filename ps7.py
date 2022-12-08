@@ -27,7 +27,7 @@ T0 = 273+20
 p0 = 100e5
 R = 287
 A = 1e-3
-A1 = 1e-3
+A1 = 1e-4
 A_star = 5e-4
 A2 = 5e-4
 k = 1.4
@@ -40,7 +40,7 @@ print(f"Stagnation speed of sound is {a0:.4}")
 a1 = a0/a_ratio(1,k)
 print(f"Critical speed of sound is {a1:.4}")
 rho0 = p0/(R*T0)
-print(f'STagnation density is {rho0:.4}')
+print(f'Stagnation density is {rho0:.4}')
 rho1 = rho0/rho_ratio(1,k)
 print(f'Density is {rho1:.4}')
 mdot = rho1*a1*A1
@@ -52,9 +52,14 @@ rho02 = rho2*rho_ratio(1,k)
 p1 = rho02*R*T0
 print(f'Pressure in tank is {p1:.4}')
 
-p01 = 20
+p01 = p1
 
 # Problem 1b
+p2 = p01*0.9395
+print(p2)
+p_star = p01/p_ratio(1,k)
+print(p_star)
+
 print("Problem 1a")
 
 M = root_scalar(critical_area_ratio, args=(k,A/A_star), method='bisect', bracket=[1,4]).root
